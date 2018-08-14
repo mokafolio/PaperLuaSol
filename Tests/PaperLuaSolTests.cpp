@@ -3,7 +3,7 @@
 // #include <CrunchLua/CrunchLua.hpp>
 
 using namespace stick;
-using namespace paperLua;
+using namespace paperLuaSol;
 
 const Suite spec[] =
 {
