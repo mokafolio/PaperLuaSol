@@ -231,17 +231,14 @@ STICK_API inline void registerPaper(sol::state_view & _lua, const stick::String 
         sol::state_view lua(_s);
         if (_item->itemType() == ItemType::Path)
         {
-            printf("PATH\n");
             return sol::make_object(lua, static_cast<paper::Path *>(_item));
         }
         else if (_item->itemType() == ItemType::Group)
         {
-            printf("Group\n");
             return sol::make_object(lua, static_cast<paper::Group *>(_item));
         }
         else if (_item->itemType() == ItemType::Symbol)
         {
-            printf("Symbol\n");
             return sol::make_object(lua, static_cast<paper::Symbol *>(_item));
         }
         return sol::make_object(lua, _item);
