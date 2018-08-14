@@ -1,7 +1,7 @@
 #ifndef PAPERLUASOL_PAPERLUASOL_HPP
 #define PAPERLUASOL_PAPERLUASOL_HPP
 
-#include <CrunchLua2/CrunchLua2.hpp>
+#include <CrunchLuaSol/CrunchLuaSol.hpp>
 #include <Paper2/Document.hpp>
 #include <Paper2/Group.hpp>
 #include <Paper2/Path.hpp>
@@ -264,7 +264,7 @@ STICK_API inline void registerPaper(sol::state_view & _lua, const stick::String 
             return std::move(sp);
         }));
 }
-} // namespace paperLua
+} // namespace paperLuaSol
 
 namespace sol
 {
