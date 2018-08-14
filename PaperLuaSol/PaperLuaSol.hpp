@@ -9,7 +9,7 @@
 #include <Paper2/Tarp/TarpRenderer.hpp>
 #include <Stick/Path.hpp>
 
-namespace paperLua
+namespace paperLuaSol
 {
 
 STICK_API inline void registerPaper(sol::state_view & _lua, const stick::String & _namespace = "")
