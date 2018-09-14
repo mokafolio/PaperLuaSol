@@ -155,7 +155,10 @@ STICK_API inline void registerPaper(sol::state_view & _lua, const stick::String 
         "fill", &Item::fill, "stroke", &Item::stroke, "hasStroke", &Item::hasStroke, "hasFill",
         &Item::hasFill, "clone", &Item::clone, "document", &Item::document, "itemType",
         &Item::itemType, "children", &Item::children, "exportSVG", &Item::exportSVG, "saveSVG",
-        &Item::saveSVG);
+        &Item::saveSVG, "setFillPaintTransform", &Item::setFillPaintTransform,
+        "removeFillPaintTransform", &Item::removeFillPaintTransform, "setStrokePaintTransform",
+        &Item::setStrokePaintTransform, "removeStrokePaintTransform",
+        &Item::removeStrokePaintTransform);
 
     tbl.new_usertype<Group>("Group", sol::base_classes, sol::bases<Item>(), "new",
                             sol::no_constructor, "setClipped", &Group::setClipped, "isClipped",
