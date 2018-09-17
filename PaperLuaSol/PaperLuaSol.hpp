@@ -137,7 +137,16 @@ STICK_API inline void registerPaper(sol::state_view & _lua, const stick::String 
         &Item::handleBounds, "strokeBounds", &Item::strokeBounds, "position", &Item::position,
         "pivot", &Item::pivot, "isVisible", &Item::isVisible, "setStrokeJoin", &Item::setStrokeJoin,
         "setStrokeCap", &Item::setStrokeCap, "setMiterLimit", &Item::setMiterLimit,
-        "setStrokeWidth", &Item::setStrokeWidth, "setDashArray", &Item::setDashArray,
+        "setStrokeWidth", &Item::setStrokeWidth, "setDashArray",
+        [](Item * _self, sol::table _tbl) {
+            Size s = _tbl.size();
+            stick::DynamicArray<Float> dashes(s);
+            for (Size i = 1; i <= _tbl.size(); ++i)
+            {
+                dashes[i - 1] = _tbl[i];
+            }
+            _self->setDashArray(dashes);
+        },
         "setDashOffset", &Item::setDashOffset, "setScaleStroke", &Item::setScaleStroke, "setStroke",
         sol::overload((void (Item::*)(const ColorRGBA &)) & Item::setStroke,
                       (void (Item::*)(const String &)) & Item::setStroke,
