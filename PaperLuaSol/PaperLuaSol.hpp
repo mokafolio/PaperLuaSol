@@ -102,7 +102,7 @@ STICK_API inline void registerPaper(sol::state_view & _lua, const stick::String 
 
     tbl.new_usertype<RadialGradient>(
         "RadialGradient", sol::base_classes, sol::bases<BaseGradient>(), "new", sol::no_constructor,
-        "setFocalPointOffset", &RadialGradient::focalPointOffset, "setRatio",
+        "setFocalPointOffset", &RadialGradient::setFocalPointOffset, "setRatio",
         &RadialGradient::setRatio, "focalPointOffset", &RadialGradient::focalPointOffset, "ratio",
         &RadialGradient::ratio);
 
@@ -158,7 +158,7 @@ STICK_API inline void registerPaper(sol::state_view & _lua, const stick::String 
         &Item::saveSVG, "setFillPaintTransform", &Item::setFillPaintTransform,
         "removeFillPaintTransform", &Item::removeFillPaintTransform, "setStrokePaintTransform",
         &Item::setStrokePaintTransform, "removeStrokePaintTransform",
-        &Item::removeStrokePaintTransform);
+        &Item::removeStrokePaintTransform, "removeTransform", &Item::removeTransform);
 
     tbl.new_usertype<Group>("Group", sol::base_classes, sol::bases<Item>(), "new",
                             sol::no_constructor, "setClipped", &Group::setClipped, "isClipped",
@@ -200,7 +200,8 @@ STICK_API inline void registerPaper(sol::state_view & _lua, const stick::String 
         "slice",
         sol::overload((Path * (Path::*)(CurveLocation, CurveLocation) const) & Path::slice,
                       (Path * (Path::*)(Float, Float) const) & Path::slice),
-        "segments", (SegmentView(Path::*)()) & Path::segments);
+        "segments", (SegmentView(Path::*)()) & Path::segments, "curves",
+        (CurveView(Path::*)()) & Path::curves);
 
     tbl.new_usertype<Document>(
         "Document", sol::base_classes, sol::bases<Item>(), sol::call_constructor,
