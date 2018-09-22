@@ -12,6 +12,46 @@
 namespace paperLuaSol
 {
 
+namespace detail
+{
+template <class T>
+struct ContainerViewPairHelper
+{
+    using ViewType = T;
+    using Iter = typename ViewType::Iter;
+
+    struct IterState
+    {
+        IterState(ViewType & _view) : it(_view.begin()), view(&_view) {}
+
+        Iter it;
+        ViewType * view;
+    };
+
+    static std::tuple<sol::object, sol::object> next(sol::user<IterState &> _iterState,
+                                                     sol::this_state _lua)
+    {
+        IterState & iState = _iterState;
+        if (iState.it == iState.view->end())
+        {
+            return std::make_tuple(sol::object(sol::lua_nil), sol::object(sol::lua_nil));
+        }
+
+        auto val = *(iState.it);
+        return std::make_tuple(
+            sol::object(_lua, sol::in_place, std::distance(iState.view->begin(), iState.it++)),
+            sol::object(_lua, sol::in_place, val));
+    }
+
+    static auto pairs(ViewType & _view)
+    {
+        IterState iState(_view);
+        return std::make_tuple(&next, sol::user<IterState>(std::move(iState)), sol::lua_nil);
+    }
+};
+
+} // namespace detail
+
 STICK_API inline void registerPaper(sol::state_view & _lua, const stick::String & _namespace = "")
 {
     using namespace paper;
@@ -57,7 +97,8 @@ STICK_API inline void registerPaper(sol::state_view & _lua, const stick::String 
         &Segment::setHandleIn, "setHandleOut", &Segment::setHandleOut, "position",
         &Segment::position, "handleIn", &Segment::handleIn, "handleOut", &Segment::handleOut,
         "handleInAbsolute", &Segment::handleInAbsolute, "handleOutAbsolute",
-        &Segment::handleOutAbsolute, "isLinear", &Segment::isLinear, "remove", &Segment::remove);
+        &Segment::handleOutAbsolute, "isLinear", &Segment::isLinear, "remove", &Segment::remove,
+        "index", &Segment::index);
 
     tbl.new_usertype<CurveLocation>(
         "CurveLocation", "new", sol::no_constructor, "position", &CurveLocation::position, "normal",
@@ -87,7 +128,7 @@ STICK_API inline void registerPaper(sol::state_view & _lua, const stick::String 
         &Curve::isOrthogonal, "isCollinear", &Curve::isCollinear, "length", &Curve::length, "area",
         &Curve::area, "divideAt", &Curve::divideAt, "divideAtParameter", &Curve::divideAtParameter,
         "bounds", (const Rect & (Curve::*)() const) & Curve::bounds, "boundsWithPadding",
-        (Rect(Curve::*)(Float) const) & Curve::bounds);
+        (Rect(Curve::*)(Float) const) & Curve::bounds, "index", &Curve::index);
 
     tbl.new_usertype<NoPaint>("NoPaint", sol::call_constructor, sol::constructors<NoPaint()>());
 
@@ -173,6 +214,16 @@ STICK_API inline void registerPaper(sol::state_view & _lua, const stick::String 
                             sol::no_constructor, "setClipped", &Group::setClipped, "isClipped",
                             &Group::isClipped);
 
+    tbl.new_usertype<SegmentView>("__SegmentView", sol::meta_function::pairs,
+                                  &detail::ContainerViewPairHelper<SegmentView>::pairs,
+                                  sol::meta_function::ipairs,
+                                  &detail::ContainerViewPairHelper<SegmentView>::pairs);
+
+    tbl.new_usertype<CurveView>("__CurveView", sol::meta_function::pairs,
+                                &detail::ContainerViewPairHelper<CurveView>::pairs,
+                                sol::meta_function::ipairs,
+                                &detail::ContainerViewPairHelper<CurveView>::pairs);
+
     tbl.new_usertype<Path>(
         "Path", sol::base_classes, sol::bases<Item>(), "new", sol::no_constructor, "addPoint",
         &Path::addPoint, "cubicCurveTo", &Path::cubicCurveTo, "quadraticCurveTo",
@@ -209,8 +260,26 @@ STICK_API inline void registerPaper(sol::state_view & _lua, const stick::String 
         "slice",
         sol::overload((Path * (Path::*)(CurveLocation, CurveLocation) const) & Path::slice,
                       (Path * (Path::*)(Float, Float) const) & Path::slice),
+        // "segments",
+        // [](sol::this_state _s, Path * _self) {
+        //     lua_State * L = _s;
+        //     auto segs = _self->segments();
+        //     sol::table tbl(L, sol::new_table(_self->segments().count(), 0));
+        //     for (auto seg : _self->segments())
+        //         tbl.add(seg);
+        //     return tbl;
+        // },
         "segments", (SegmentView(Path::*)()) & Path::segments, "curves",
-        (CurveView(Path::*)()) & Path::curves);
+        (CurveView(Path::*)()) & Path::curves
+        // [](sol::this_state _s, Path * _self) {
+        //     lua_State * L = _s;
+        //     auto curves = _self->curves();
+        //     sol::table tbl(L, sol::new_table(_self->curves().count(), 0));
+        //     for (auto seg : _self->curves())
+        //         tbl.add(seg);
+        //     return tbl;
+        // }
+    );
 
     tbl.new_usertype<Document>(
         "Document", sol::base_classes, sol::bases<Item>(), sol::call_constructor,
@@ -309,6 +378,17 @@ struct pusher<paper::Intersection>
 };
 
 } // namespace stack
+
+template <bool Const, class CT, class TO>
+struct is_container<paper::detail::ContainerView<Const, CT, TO>> : std::false_type
+{
+};
+
+// template <bool Const, class CT, class TO>
+// struct container_traits<paper::detail::ContainerView<Const, CT, TO>>
+// {
+// };
+
 } // namespace sol
 
 #endif // PAPERLUA_PAPERLUA_HPP
