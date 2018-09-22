@@ -22,7 +22,9 @@ struct ContainerViewPairHelper
 
     struct IterState
     {
-        IterState(ViewType & _view) : it(_view.begin()), view(&_view) {}
+        IterState(ViewType & _view) : it(_view.begin()), view(&_view)
+        {
+        }
 
         Iter it;
         ViewType * view;
@@ -566,8 +568,7 @@ STICK_API inline void registerPaper(sol::state_view & _lua, const stick::String 
         "segments",
         (SegmentView(Path::*)()) & Path::segments,
         "curves",
-        (CurveView(Path::*)()) & Path::curves
-    );
+        (CurveView(Path::*)()) & Path::curves);
 
     tbl.new_usertype<Document>(
         "Document",
