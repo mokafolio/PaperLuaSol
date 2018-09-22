@@ -22,7 +22,9 @@ struct ContainerViewPairHelper
 
     struct IterState
     {
-        IterState(ViewType & _view) : it(_view.begin()), view(&_view)
+        IterState(ViewType & _view)
+            : it(_view.begin())
+            , view(&_view)
         {
         }
 
@@ -695,11 +697,6 @@ template <bool Const, class CT, class TO>
 struct is_container<paper::detail::ContainerView<Const, CT, TO>> : std::false_type
 {
 };
-
-// template <bool Const, class CT, class TO>
-// struct container_traits<paper::detail::ContainerView<Const, CT, TO>>
-// {
-// };
 
 } // namespace sol
 
