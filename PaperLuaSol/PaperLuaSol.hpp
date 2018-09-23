@@ -22,9 +22,7 @@ struct ContainerViewPairHelper
 
     struct IterState
     {
-        IterState(ViewType & _view)
-            : it(_view.begin())
-            , view(&_view)
+        IterState(ViewType & _view) : it(_view.begin()), view(&_view)
         {
         }
 
