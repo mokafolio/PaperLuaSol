@@ -568,6 +568,16 @@ STICK_API inline void registerPaper(sol::state_view & _lua, const stick::String 
         "intersections",
         sol::overload((IntersectionArray(Path::*)() const) & Path::intersections,
                       (IntersectionArray(Path::*)(const Path *) const) & Path::intersections),
+        // "intersections",
+        // sol::overload(
+        //     [](Path & _self, sol::this_state _lua)
+        //     {
+        //         auto isecs = _self.intersections();
+        //         if(!isecs.count())
+        //             return sol::object(sol::lua_nil);
+        //         return sol::object(_lua, sol::in_place, val);
+        //     }
+        // )
         "slice",
         sol::overload((Path * (Path::*)(CurveLocation, CurveLocation) const) & Path::slice,
                       (Path * (Path::*)(Float, Float) const) & Path::slice),
