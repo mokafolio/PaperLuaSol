@@ -55,26 +55,19 @@ struct ContainerViewPairHelper
 } // namespace detail
 
 STICK_API inline void registerPaper(sol::state_view _lua, const stick::String & _namespace = "");
-STICK_API inline void registerPaper(sol::state_view _lua, sol::table _tbl, const stick::String & _namespace);
+STICK_API inline void registerPaper(sol::state_view _lua, sol::table _tbl);
 
 STICK_API inline void registerPaper(sol::state_view _lua, const stick::String & _namespace)
 {
-    registerPaper(_lua, _lua.globals(), _namespace);
+    registerPaper(_lua, crunchLuaSol::ensureNamespaceTable(_lua, _lua.globals(), _namespace));
 }
 
-STICK_API inline void registerPaper(sol::state_view _lua, sol::table _tbl,const stick::String & _namespace)
+STICK_API inline void registerPaper(sol::state_view _lua, sol::table _tbl)
 {
     using namespace paper;
     using namespace stick;
 
     sol::table tbl = _tbl;
-    if (!_namespace.isEmpty())
-    {
-        auto tokens = path::segments(_namespace, '.');
-        for (const String & token : tokens)
-            tbl = tbl[token.cString()] = tbl.get_or(token.cString(), _lua.create_table());
-    }
-
     tbl.new_enum("StrokeJoin", //
                  "Miter",
                  StrokeJoin::Miter, //
