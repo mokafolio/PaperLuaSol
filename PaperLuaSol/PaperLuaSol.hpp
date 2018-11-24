@@ -54,12 +54,20 @@ struct ContainerViewPairHelper
 
 } // namespace detail
 
-STICK_API inline void registerPaper(sol::state_view & _lua, const stick::String & _namespace = "")
+STICK_API inline void registerPaper(sol::state_view _lua, const stick::String & _namespace = "");
+STICK_API inline void registerPaper(sol::state_view _lua, sol::table _tbl, const stick::String & _namespace);
+
+STICK_API inline void registerPaper(sol::state_view _lua, const stick::String & _namespace)
+{
+    registerPaper(_lua, _lua.globals(), _namespace);
+}
+
+STICK_API inline void registerPaper(sol::state_view _lua, sol::table _tbl,const stick::String & _namespace)
 {
     using namespace paper;
     using namespace stick;
 
-    sol::table tbl = _lua.globals();
+    sol::table tbl = _tbl;
     if (!_namespace.isEmpty())
     {
         auto tokens = path::segments(_namespace, '.');
