@@ -302,6 +302,10 @@ STICK_API inline void registerPaper(sol::state_view _lua, sol::table _tbl)
         &Item::remove,
         "removeChildren",
         &Item::removeChildren,
+        "findChild",
+        &Item::findChild,
+        "child",
+        &Item::child,
         "name",
         &Item::name,
         "parent",
@@ -625,7 +629,13 @@ STICK_API inline void registerPaper(sol::state_view _lua, sol::table _tbl)
         "height",
         &Document::height,
         "size",
-        &Document::size);
+        &Document::size,
+        "loadSVG",
+        sol::overload([](Document & _self, const char * _path) { return _self.loadSVG(_path); },
+                      &Document::loadSVG),
+        "parseSVG",
+        sol::overload([](Document & _self, const char * _svg) { return _self.parseSVG(_svg); },
+                      &Document::parseSVG));
 
     tbl.set_function("createLinearGradient", createLinearGradient);
     tbl.set_function("createRadialGradient", createRadialGradient);
@@ -702,6 +712,19 @@ struct pusher<paper::Intersection>
         tbl["location"] = _stop.location;
         tbl["position"] = _stop.position;
         sol::stack::push(L, tbl);
+        return 1;
+    }
+};
+
+template <>
+struct pusher<paper::svg::SVGImportResult>
+{
+    static int push(lua_State * L, const paper::svg::SVGImportResult & _result)
+    {
+        if(_result)
+            sol::stack::push(L, _result.group());
+        else
+            sol::stack::push(L, _result.error());
         return 1;
     }
 };
