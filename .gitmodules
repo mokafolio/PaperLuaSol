@@ -13,3 +13,6 @@
 [submodule "subprojects/Tarp"]
 	path = subprojects/Tarp
 	url = https://github.com/mokafolio/Tarp.git
+[submodule "subprojects/StickLuaSol"]
+	path = subprojects/StickLuaSol
+	url = https://github.com/mokafolio/StickLuaSol.git

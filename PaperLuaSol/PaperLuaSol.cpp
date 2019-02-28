@@ -1,3 +1,4 @@
+#include <StickLuaSol/StickLuaSol.hpp>
 #include <CrunchLuaSol/CrunchLuaSol.hpp>
 #include <PaperLuaSol/PaperLuaSol.hpp>
 
@@ -8,6 +9,8 @@
 
 namespace paperLuaSol
 {
+using namespace stick;
+
 void registerPaper(sol::state_view _lua, const stick::String & _namespace)
 {
     registerPaper(_lua, crunchLuaSol::ensureNamespaceTable(_lua, _lua.globals(), _namespace));
