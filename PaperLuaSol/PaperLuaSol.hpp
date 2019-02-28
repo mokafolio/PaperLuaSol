@@ -4,6 +4,7 @@
 #include <CrunchLuaSol/CrunchLuaSol.hpp>
 
 #include <Paper2/Document.hpp>
+#include <Paper2/Path.hpp>
 #include <Paper2/Group.hpp>
 #include <Paper2/Symbol.hpp>
 #include <Paper2/Tarp/TarpRenderer.hpp>
@@ -58,7 +59,7 @@ struct ContainerViewPairHelper
 
 STICK_API void registerPaper(sol::state_view _lua, const stick::String & _namespace)
 {
-    registerPaper(_lua, stickLuasSol::ensureNamespaceTable(_lua, _lua.globals(), _namespace));
+    registerPaper(_lua, stickLuaSol::ensureNamespaceTable(_lua, _lua.globals(), _namespace));
 }
 
 STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
