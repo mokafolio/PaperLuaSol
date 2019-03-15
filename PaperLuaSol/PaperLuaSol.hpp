@@ -4,8 +4,8 @@
 #include <CrunchLuaSol/CrunchLuaSol.hpp>
 
 #include <Paper2/Document.hpp>
-#include <Paper2/Path.hpp>
 #include <Paper2/Group.hpp>
+#include <Paper2/Path.hpp>
 #include <Paper2/Symbol.hpp>
 #include <Paper2/Tarp/TarpRenderer.hpp>
 
@@ -510,6 +510,14 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
         &Path::curveBy,
         "closePath",
         &Path::closePath,
+        "makeEllipse",
+        &Path::makeEllipse,
+        "makeCircle",
+        &Path::makeCircle,
+        "makeRectangle",
+        &Path::makeRectangle,
+        "makeRoundedRectangle",
+        &Path::makeRoundedRectangle,
         "smooth",
         sol::overload([](Path & _self) { _self.smooth(); },
                       (void (Path::*)(Smoothing, bool)) & Path::smooth,
@@ -722,7 +730,7 @@ struct pusher<paper::svg::SVGImportResult>
 {
     static int push(lua_State * L, const paper::svg::SVGImportResult & _result)
     {
-        if(_result)
+        if (_result)
             sol::stack::push(L, _result.group());
         else
             sol::stack::push(L, _result.error());
