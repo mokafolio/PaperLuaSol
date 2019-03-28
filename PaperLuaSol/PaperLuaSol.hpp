@@ -55,6 +55,102 @@ struct ContainerViewPairHelper
     }
 };
 
+// Dynamic Property Helpers
+//@TODO: This stuff should most likely be housed somewhere else. Maybe StickLuaSol?
+struct UniquePropertyTableIdentifier
+{
+    void * operator()()
+    {
+        static int s_var;
+        return (void *)&s_var;
+    }
+};
+
+template <class T, class Identifier = UniquePropertyTableIdentifier>
+void setDynamicProperty(T * _self,
+                        sol::stack_object _key,
+                        sol::stack_object _value,
+                        sol::this_state _s,
+                        Identifier _ident = UniquePropertyTableIdentifier())
+{
+    sol::state_view lua(_s);
+    sol::table reg = lua.registry();
+
+    sol::optional<sol::table> oir = reg[_ident];
+    if (!oir)
+    {
+        oir = lua.create_table();
+        reg[_ident] = oir.value();
+    }
+
+    sol::optional<sol::table> oit = oir.value()[(void *)_self];
+    if (!oit)
+    {
+        oit = lua.create_table();
+        oir.value()[(void *)_self] = oit.value();
+    }
+
+    sol::optional<sol::table> oitt = oir.value()[(void *)_self];
+    oit.value()[_key] = _value;
+}
+
+template <class T, class Identifier = UniquePropertyTableIdentifier>
+sol::object getDynamicProperty(T * _self,
+                               sol::stack_object _key,
+                               sol::this_state _s,
+                               Identifier _ident = UniquePropertyTableIdentifier())
+{
+    sol::state_view lua(_s);
+    sol::table reg = lua.registry();
+    sol::optional<sol::table> oir = reg[_ident];
+    if (!oir)
+        return sol::make_object(lua, sol::lua_nil);
+
+    sol::optional<sol::table> oit = oir.value()[(void *)_self];
+    if (!oit)
+        return sol::make_object(lua, sol::lua_nil);
+
+    return sol::make_object(lua, oit.value()[_key]);
+}
+
+template <class T, class Identifier = UniquePropertyTableIdentifier>
+void removeDynamicProperties(T * _self,
+                             sol::this_state _s,
+                             Identifier _ident = UniquePropertyTableIdentifier())
+{
+    sol::state_view lua(_s);
+    sol::table reg = lua.registry();
+
+    sol::optional<sol::table> oir = reg[_ident];
+    if (oir)
+    {
+        sol::optional<sol::table> oit = oir.value()[(void *)_self];
+        if (oit)
+            oir.value()[(void *)_self] = sol::lua_nil;
+    }
+}
+
+template <class T, class IdentFunctor = UniquePropertyTableIdentifier>
+void dynamicPropertyNewIndex(T * _self,
+                             sol::stack_object _key,
+                             sol::stack_object _value,
+                             sol::this_state _s)
+{
+    setDynamicProperty(_self, _key, _value, _s, IdentFunctor()());
+}
+
+template <class T, class IdentFunctor = UniquePropertyTableIdentifier>
+sol::object dynamicPropertyIndex(T * _self, sol::stack_object _key, sol::this_state _s)
+{
+    return getDynamicProperty(_self, _key, _s, IdentFunctor()());
+}
+
+template <class T, class IdentFunctor = UniquePropertyTableIdentifier>
+void dynamicPropertyGC(T * _self, sol::this_state _s)
+{
+    removeDynamicProperties(_self, _s, IdentFunctor()());
+}
+
 } // namespace detail
 
 STICK_API void registerPaper(sol::state_view _lua, const stick::String & _namespace)
@@ -286,6 +382,10 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
         "Item",
         "new",
         sol::no_constructor,
+        sol::meta_function::new_index,
+        detail::dynamicPropertyNewIndex<Item>,
+        sol::meta_function::index,
+        detail::dynamicPropertyIndex<Item>,
         "addChild",
         &Item::addChild,
         "insertAbove",
@@ -299,7 +399,10 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
         "reverseChildren",
         &Item::reverseChildren,
         "remove",
-        &Item::remove,
+        [](Item * _self, sol::this_state _s) {
+            detail::removeDynamicProperties(_self, _s);
+            _self->remove();
+        },
         "removeChildren",
         &Item::removeChildren,
         "findChild",
@@ -466,6 +569,10 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
                             sol::bases<Item>(),
                             "new",
                             sol::no_constructor,
+                            sol::meta_function::new_index,
+                            detail::dynamicPropertyNewIndex<Group>,
+                            sol::meta_function::index,
+                            detail::dynamicPropertyIndex<Group>,
                             "setClipped",
                             &Group::setClipped,
                             "isClipped",
@@ -489,6 +596,10 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
         sol::bases<Item>(),
         "new",
         sol::no_constructor,
+        sol::meta_function::new_index,
+        detail::dynamicPropertyNewIndex<Path>,
+        sol::meta_function::index,
+        detail::dynamicPropertyIndex<Path>,
         "addPoint",
         &Path::addPoint,
         "cubicCurveTo",
@@ -605,6 +716,10 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
         sol::bases<Item>(),
         sol::call_constructor,
         sol::constructors<Document(), Document(const char *)>(),
+        sol::meta_function::new_index,
+        detail::dynamicPropertyNewIndex<Document>,
+        sol::meta_function::index,
+        detail::dynamicPropertyIndex<Document>,
         "createGroup",
         sol::overload([](Document & _self) { return _self.createGroup(); }, &Document::createGroup),
         "createPath",
