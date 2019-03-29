@@ -57,6 +57,8 @@ struct ContainerViewPairHelper
 
 // Dynamic Property Helpers
 //@TODO: This stuff should most likely be housed somewhere else. Maybe StickLuaSol?
+
+// a simple unique default identifier to index luas registry (Callable).
 struct UniquePropertyTableIdentifier
 {
     void * operator()()
@@ -66,6 +68,8 @@ struct UniquePropertyTableIdentifier
     }
 };
 
+// if your new_index metamethod needs to do additional things, you can use this function directly
+// inside your new_index implementation to set a property.
 template <class T, class Identifier = UniquePropertyTableIdentifier>
 void setDynamicProperty(T * _self,
                         sol::stack_object _key,
@@ -76,6 +80,7 @@ void setDynamicProperty(T * _self,
     sol::state_view lua(_s);
     sol::table reg = lua.registry();
 
+    // ensure that the table that maps objects to property tables exists
     sol::optional<sol::table> oir = reg[_ident];
     if (!oir)
     {
@@ -83,6 +88,7 @@ void setDynamicProperty(T * _self,
         reg[_ident] = oir.value();
     }
 
+    // ensure that the property table for this _self exists
     sol::optional<sol::table> oit = oir.value()[(void *)_self];
     if (!oit)
     {
@@ -90,10 +96,11 @@ void setDynamicProperty(T * _self,
         oir.value()[(void *)_self] = oit.value();
     }
 
-    sol::optional<sol::table> oitt = oir.value()[(void *)_self];
     oit.value()[_key] = _value;
 }
 
+// if your index metamethod needs to do additional things, you can use this function directly
+// inside your index implementation to get a property.
 template <class T, class Identifier = UniquePropertyTableIdentifier>
 sol::object getDynamicProperty(T * _self,
                                sol::stack_object _key,
@@ -102,6 +109,7 @@ sol::object getDynamicProperty(T * _self,
 {
     sol::state_view lua(_s);
     sol::table reg = lua.registry();
+
     sol::optional<sol::table> oir = reg[_ident];
     if (!oir)
         return sol::make_object(lua, sol::lua_nil);
@@ -113,23 +121,36 @@ sol::object getDynamicProperty(T * _self,
     return sol::make_object(lua, oit.value()[_key]);
 }
 
+// if your gc metamethod needs to do additional things, or your destroy your objects in a different
+// way, you can call this function directly to remove all entries for an item from the registry.
 template <class T, class Identifier = UniquePropertyTableIdentifier>
 void removeDynamicProperties(T * _self,
-                             sol::this_state _s,
+                             sol::state_view _s,
                              Identifier _ident = UniquePropertyTableIdentifier())
 {
-    sol::state_view lua(_s);
-    sol::table reg = lua.registry();
+    sol::table reg = _s.registry();
 
+    // remove the entry for _self from the registry table if needed
     sol::optional<sol::table> oir = reg[_ident];
     if (oir)
     {
         sol::optional<sol::table> oit = oir.value()[(void *)_self];
         if (oit)
+        {
             oir.value()[(void *)_self] = sol::lua_nil;
+        }
     }
 }
+// just a little helper to work around sol::constructor not working with sol::this_state
+template <class T, class Identifier = UniquePropertyTableIdentifier>
+void removeDynamicProperties(T * _self,
+                             sol::this_state _s,
+                             Identifier _ident = UniquePropertyTableIdentifier())
+{
+    removeDynamicProperties(_self, sol::state_view(_s), _ident);
+}
 
+// bind this to sol::meta_function::new_index
 template <class T, class IdentFunctor = UniquePropertyTableIdentifier>
 void dynamicPropertyNewIndex(T * _self,
                              sol::stack_object _key,
@@ -139,17 +160,20 @@ void dynamicPropertyNewIndex(T * _self,
     setDynamicProperty(_self, _key, _value, _s, IdentFunctor()());
 }
 
+// bind this to sol::meta_function::index
 template <class T, class IdentFunctor = UniquePropertyTableIdentifier>
 sol::object dynamicPropertyIndex(T * _self, sol::stack_object _key, sol::this_state _s)
 {
     return getDynamicProperty(_self, _key, _s, IdentFunctor()());
 }
 
-template <class T, class IdentFunctor = UniquePropertyTableIdentifier>
-void dynamicPropertyGC(T * _self, sol::this_state _s)
-{
-    removeDynamicProperties(_self, _s, IdentFunctor()());
-}
+// bind this to sol::meta_function::garbage_collect
+//@NOTE: This wont work right now as sol::destructor does not work with sol::this_state :/
+// template <class T, class IdentFunctor = UniquePropertyTableIdentifier>
+// void dynamicPropertyGC(T * _self, sol::this_state _s)
+// {
+//     removeDynamicProperties(_self, _s, IdentFunctor()());
+// }
 
 } // namespace detail
 
@@ -413,6 +437,10 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
         &Item::name,
         "parent",
         &Item::parent,
+        "nextSibling",
+        &Item::nextSibling,
+        "previousSibling",
+        &Item::previousSibling,
         "setPosition",
         &Item::setPosition,
         "setPivot",
