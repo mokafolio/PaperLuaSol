@@ -232,6 +232,12 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
                  "Unknown",
                  ItemType::Unknown);
 
+    tbl.new_enum("HitTestMode", //
+                 "Fill",
+                 HitTestModeFill, //
+                 "Curves",
+                 HitTestModeCurves);
+
     tbl.new_usertype<Segment>("Segment",
                               "new",
                               sol::no_constructor,
@@ -875,6 +881,32 @@ struct pusher<paper::Intersection>
         return 1;
     }
 };
+
+template <>
+struct pusher<paper::HitTestResult>
+{
+    static int push(lua_State * L, const paper::HitTestResult & _res)
+    {
+        sol::table tbl(L, sol::new_table(0, 2));
+        tbl["item"] = _res.item;
+        tbl["type"] = _stop.type;
+        sol::stack::push(L, tbl);
+        return 1;
+    }
+};
+
+// template <>
+// struct checker<paper::HitTestSettings>
+// {
+//     static int push(lua_State * L, const paper::HitTestResult & _res)
+//     {
+//         sol::table tbl(L, sol::new_table(0, 2));
+//         tbl["item"] = _res.item;
+//         tbl["type"] = _stop.type;
+//         sol::stack::push(L, tbl);
+//         return 1;
+//     }
+// };
 
 template <>
 struct pusher<paper::svg::SVGImportResult>
