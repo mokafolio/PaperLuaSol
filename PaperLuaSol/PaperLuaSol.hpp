@@ -590,7 +590,13 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
         "removeStrokePaintTransform",
         &Item::removeStrokePaintTransform,
         "removeTransform",
-        &Item::removeTransform);
+        &Item::removeTransform,
+        "hitTest",
+        sol::overlaod(&Item::hitTest,
+                      [](Item * _self, const Vec2f & _pos) { return _self->hitTest(_pos); }),
+        "hitTestAll",
+        sol::overlaod(&Item::hitTestAll,
+                      [](Item * _self, const Vec2f & _pos) { return _self->hitTestAll(_pos); }), );
 
     tbl.new_usertype<Group>("Group",
                             sol::base_classes,
