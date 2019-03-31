@@ -602,7 +602,9 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
                       [](Item * _self, const Vec2f & _pos) { return _self->hitTest(_pos); }),
         "hitTestAll",
         sol::overload(&Item::hitTestAll,
-                      [](Item * _self, const Vec2f & _pos) { return _self->hitTestAll(_pos); }));
+                      [](Item * _self, const Vec2f & _pos) { return _self->hitTestAll(_pos); }),
+        "selectChildren",
+        &Item::selectChildren);
 
     tbl.new_usertype<Group>("Group",
                             sol::base_classes,
