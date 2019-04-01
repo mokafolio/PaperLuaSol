@@ -604,7 +604,11 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
         sol::overload(&Item::hitTestAll,
                       [](Item * _self, const Vec2f & _pos) { return _self->hitTestAll(_pos); }),
         "selectChildren",
-        &Item::selectChildren);
+        &Item::selectChildren,
+        "hasTransform",
+        &Item::hasTransform,
+        "isTransformed",
+        &Item::isTransformed);
 
     tbl.new_usertype<Group>("Group",
                             sol::base_classes,
