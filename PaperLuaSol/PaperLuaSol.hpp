@@ -234,9 +234,9 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
 
     tbl.new_enum("HitTestMode", //
                  "Fill",
-                 HitTestModeFill, //
+                 HitTestFill, //
                  "Curves",
-                 HitTestModeCurves);
+                 HitTestCurves);
 
     tbl.new_usertype<Segment>("Segment",
                               "new",
@@ -893,7 +893,7 @@ struct pusher<paper::HitTestResult>
     {
         sol::table tbl(L, sol::new_table(0, 2));
         tbl["item"] = _res.item;
-        tbl["type"] = _stop.type;
+        tbl["type"] = _res.type;
         sol::stack::push(L, tbl);
         return 1;
     }
