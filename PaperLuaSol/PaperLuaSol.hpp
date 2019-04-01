@@ -831,6 +831,8 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
                                       &RenderInterface::setDefaultProjection,
                                       "setProjection",
                                       &RenderInterface::setProjection,
+                                      "setTransform",
+                                      &RenderInterface::setTransform,
                                       "document",
                                       &RenderInterface::document,
                                       "draw",
