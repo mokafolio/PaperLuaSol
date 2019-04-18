@@ -585,6 +585,8 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
         &Item::children,
         "exportSVG",
         &Item::exportSVG,
+        "exportBinary",
+        &Item::exportBinary,
         "saveSVG",
         &Item::saveSVG,
         "setFillPaintTransform",
@@ -710,9 +712,21 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
         "regularOffset",
         &Path::regularOffset,
         "closestCurveLocation",
+        sol::overload(
+            [](Path & _self, const Vec2f & _point) {
+                Float outDist;
+                CurveLocation loc = _self.closestCurveLocation(_point, outDist);
+                return std::make_tuple(loc, outDist);
+            },
+            [](Path & _self, const Mat32f & _transform, const Vec2f & _point) {
+                Float outDist;
+                CurveLocation loc = _self.closestCurveLocation(_point, _transform, outDist);
+                return std::make_tuple(loc, outDist);
+            }),
+        "closestCurveLocationLocal",
         [](Path & _self, const Vec2f & _point) {
             Float outDist;
-            CurveLocation loc = _self.closestCurveLocation(_point, outDist);
+            CurveLocation loc = _self.closestCurveLocationLocal(_point, outDist);
             return std::make_tuple(loc, outDist);
         },
         "curveLocationAt",
@@ -726,7 +740,8 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
         "isClockwise",
         &Path::isClockwise,
         "contains",
-        &Path::contains,
+        sol::overload((bool (Path::*)(const Vec2f &) const) & Path::contains,
+                      (bool (Path::*)(const Vec2f &, const Mat32f &) const) & Path::contains),
         "segment",
         (Segment(Path::*)(stick::Size)) & Path::segment,
         "curve",
@@ -736,18 +751,15 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
         "curveCount",
         &Path::curveCount,
         "intersections",
-        sol::overload((IntersectionArray(Path::*)() const) & Path::intersections,
-                      (IntersectionArray(Path::*)(const Path *) const) & Path::intersections),
-        // "intersections",
-        // sol::overload(
-        //     [](Path & _self, sol::this_state _lua)
-        //     {
-        //         auto isecs = _self.intersections();
-        //         if(!isecs.count())
-        //             return sol::object(sol::lua_nil);
-        //         return sol::object(_lua, sol::in_place, val);
-        //     }
-        // )
+        sol::overload(
+            (IntersectionArray(Path::*)() const) & Path::intersections,
+            (IntersectionArray(Path::*)(const Mat32f &) const) & Path::intersections,
+            (IntersectionArray(Path::*)(const Path *) const) & Path::intersections,
+            (IntersectionArray(Path::*)(const Path *, const Mat32f &) const) & Path::intersections,
+            (IntersectionArray(Path::*)(const Path *, const Mat32f &, const Mat32f &) const) &
+                Path::intersections),
+        "intersectionsLocal",
+        &Path::intersectionsLocal,
         "slice",
         sol::overload((Path * (Path::*)(CurveLocation, CurveLocation) const) & Path::slice,
                       (Path * (Path::*)(Float, Float) const) & Path::slice),
@@ -804,7 +816,9 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
                       &Document::loadSVG),
         "parseSVG",
         sol::overload([](Document & _self, const char * _svg) { return _self.parseSVG(_svg); },
-                      &Document::parseSVG));
+                      &Document::parseSVG),
+        "parseBinary",
+        &Document::parseBinary);
 
     tbl.set_function("createLinearGradient", createLinearGradient);
     tbl.set_function("createRadialGradient", createRadialGradient);
