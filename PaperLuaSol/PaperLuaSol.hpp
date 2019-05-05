@@ -610,7 +610,9 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
         "hasTransform",
         &Item::hasTransform,
         "isTransformed",
-        &Item::isTransformed);
+        &Item::isTransformed,
+        "canAddChild",
+        &Item::canAddChild);
 
     tbl.new_usertype<Group>("Group",
                             sol::base_classes,
