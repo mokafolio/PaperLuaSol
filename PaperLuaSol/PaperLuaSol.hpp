@@ -433,6 +433,8 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
             detail::removeDynamicProperties(_self, _s);
             _self->remove();
         },
+        "removeFromParent",
+        &Item::removeFromParent,
         "removeChildren",
         &Item::removeChildren,
         "findChild",
@@ -586,7 +588,14 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
         "exportSVG",
         &Item::exportSVG,
         "exportBinary",
-        &Item::exportBinary,
+        [](const Item * _self, sol::this_state _s)
+        {  
+            sol::state_view lua(_s);
+            auto res = _self->exportBinary();
+            if(res)
+                return sol::make_object<const char*>(lua, reinterpret_cast<const char*>(&res.get()[0]), res.get().count());
+            return sol::make_object(lua, res.error());
+        },
         "saveSVG",
         &Item::saveSVG,
         "setFillPaintTransform",
@@ -817,8 +826,10 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
         "parseSVG",
         sol::overload([](Document & _self, const char * _svg) { return _self.parseSVG(_svg); },
                       &Document::parseSVG),
-        "parseBinary",
-        &Document::parseBinary);
+        "parseBinary", [](Document & _self, stick::String _binaryStr) {
+            return _self.parseBinary(reinterpret_cast<const UInt8 *>(_binaryStr.cString()),
+                                     _binaryStr.length());
+        });
 
     tbl.set_function("createLinearGradient", createLinearGradient);
     tbl.set_function("createRadialGradient", createRadialGradient);
