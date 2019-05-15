@@ -771,6 +771,13 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
                 Path::intersections),
         "intersectionsLocal",
         &Path::intersectionsLocal,
+        "extrema",
+        [](Path * _self)
+        {
+            stick::DynamicArray<CurveLocation> ret;
+            _self->extrema(ret);
+            return ret;
+        },
         "slice",
         sol::overload((Path * (Path::*)(CurveLocation, CurveLocation) const) & Path::slice,
                       (Path * (Path::*)(Float, Float) const) & Path::slice),
