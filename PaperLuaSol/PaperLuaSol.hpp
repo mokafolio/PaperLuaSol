@@ -573,10 +573,6 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
         &Item::fill,
         "stroke",
         &Item::stroke,
-        "hasStroke",
-        &Item::hasStroke,
-        "hasFill",
-        &Item::hasFill,
         "clone",
         &Item::clone,
         "document",
@@ -838,10 +834,14 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
         "parseBinary", [](Document & _self, stick::String _binaryStr) {
             return _self.parseBinary(reinterpret_cast<const UInt8 *>(_binaryStr.cString()),
                                      _binaryStr.length());
-        });
+        },
+        "createLinearGradient",
+        &Document::createLinearGradient,
+        "createRadialGradient",
+        &Document::createRadialGradient,
+        "createStyle",
+        &Document::createStyle);
 
-    tbl.set_function("createLinearGradient", createLinearGradient);
-    tbl.set_function("createRadialGradient", createRadialGradient);
     tbl.set_function("upCastItem", [](Item * _item, sol::this_state _s) {
         sol::state_view lua(_s);
         if (_item->itemType() == ItemType::Path)
