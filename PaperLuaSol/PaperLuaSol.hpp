@@ -412,6 +412,31 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
                                      "ratio",
                                      &RadialGradient::ratio);
 
+    //@TODO: Add Style binding
+    tbl.new_usertype<ResolvedStyle>("ResolvedStyle",
+                                    "new",
+                                    sol::no_constructor,
+                                    "fill",
+                                    &ResolvedStyle::fill,
+                                    "stroke",
+                                    &ResolvedStyle::stroke,
+                                    "strokeWidth",
+                                    &ResolvedStyle::strokeWidth,
+                                    "strokeJoin",
+                                    &ResolvedStyle::strokeJoin,
+                                    "strokeCap",
+                                    &ResolvedStyle::strokeCap,
+                                    "scaleStroke",
+                                    &ResolvedStyle::scaleStroke,
+                                    "miterLimit",
+                                    &ResolvedStyle::miterLimit,
+                                    "dashArray",
+                                    &ResolvedStyle::dashArray,
+                                    "dashOffset",
+                                    &ResolvedStyle::dashOffset,
+                                    "windingRule",
+                                    &ResolvedStyle::windingRule);
+
     tbl.new_usertype<Item>(
         "Item",
         "new",
@@ -588,12 +613,12 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
         "exportSVG",
         &Item::exportSVG,
         "exportBinary",
-        [](const Item * _self, sol::this_state _s)
-        {  
+        [](const Item * _self, sol::this_state _s) {
             sol::state_view lua(_s);
             auto res = _self->exportBinary();
-            if(res)
-                return sol::make_object<const char*>(lua, reinterpret_cast<const char*>(&res.get()[0]), res.get().count());
+            if (res)
+                return sol::make_object<const char *>(
+                    lua, reinterpret_cast<const char *>(&res.get()[0]), res.get().count());
             return sol::make_object(lua, res.error());
         },
         "saveSVG",
@@ -621,7 +646,9 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
         "isTransformed",
         &Item::isTransformed,
         "canAddChild",
-        &Item::canAddChild);
+        &Item::canAddChild,
+        "resolvedStyle",
+        &Item::resolvedStyle);
 
     tbl.new_usertype<Group>("Group",
                             sol::base_classes,
@@ -772,8 +799,7 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
         "intersectionsLocal",
         &Path::intersectionsLocal,
         "extrema",
-        [](Path * _self)
-        {
+        [](Path * _self) {
             stick::DynamicArray<CurveLocation> ret;
             _self->extrema(ret);
             return ret;
@@ -835,7 +861,8 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
         "parseSVG",
         sol::overload([](Document & _self, const char * _svg) { return _self.parseSVG(_svg); },
                       &Document::parseSVG),
-        "parseBinary", [](Document & _self, stick::String _binaryStr) {
+        "parseBinary",
+        [](Document & _self, stick::String _binaryStr) {
             return _self.parseBinary(reinterpret_cast<const UInt8 *>(_binaryStr.cString()),
                                      _binaryStr.length());
         },
