@@ -413,29 +413,29 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
                                      &RadialGradient::ratio);
 
     //@TODO: Add Style binding
-    tbl.new_usertype<ResolvedStyle>("ResolvedStyle",
-                                    "new",
-                                    sol::no_constructor,
-                                    "fill",
-                                    &ResolvedStyle::fill,
-                                    "stroke",
-                                    &ResolvedStyle::stroke,
-                                    "strokeWidth",
-                                    &ResolvedStyle::strokeWidth,
-                                    "strokeJoin",
-                                    &ResolvedStyle::strokeJoin,
-                                    "strokeCap",
-                                    &ResolvedStyle::strokeCap,
-                                    "scaleStroke",
-                                    &ResolvedStyle::scaleStroke,
-                                    "miterLimit",
-                                    &ResolvedStyle::miterLimit,
-                                    "dashArray",
-                                    &ResolvedStyle::dashArray,
-                                    "dashOffset",
-                                    &ResolvedStyle::dashOffset,
-                                    "windingRule",
-                                    &ResolvedStyle::windingRule);
+    // tbl.new_usertype<ResolvedStyle>("ResolvedStyle",
+    //                                 "new",
+    //                                 sol::no_constructor,
+    //                                 "fill",
+    //                                 &ResolvedStyle::fill,
+    //                                 "stroke",
+    //                                 &ResolvedStyle::stroke,
+    //                                 "strokeWidth",
+    //                                 &ResolvedStyle::strokeWidth,
+    //                                 "strokeJoin",
+    //                                 &ResolvedStyle::strokeJoin,
+    //                                 "strokeCap",
+    //                                 &ResolvedStyle::strokeCap,
+    //                                 "scaleStroke",
+    //                                 &ResolvedStyle::scaleStroke,
+    //                                 "miterLimit",
+    //                                 &ResolvedStyle::miterLimit,
+    //                                 "dashArray",
+    //                                 &ResolvedStyle::dashArray,
+    //                                 "dashOffset",
+    //                                 &ResolvedStyle::dashOffset,
+    //                                 "windingRule",
+    //                                 &ResolvedStyle::windingRule);
 
     tbl.new_usertype<Item>(
         "Item",
@@ -990,6 +990,30 @@ struct pusher<paper::svg::SVGImportResult>
             sol::stack::push(L, _result.group());
         else
             sol::stack::push(L, _result.error());
+        return 1;
+    }
+};
+
+template <>
+struct pusher<paper::ResolvedStyle>
+{
+    static int push(lua_State * L, const paper::ResolvedStyle & _style)
+    {
+        sol::table tbl(L, sol::new_table(0, 10));
+
+        tbl["fill"] = _style.fill;
+        tbl["stroke"] = _style.stroke;
+        tbl["strokeWidth"] = _style.strokeWidth;
+        tbl["strokeJoin"] = _style.strokeJoin;
+        tbl["strokeCap"] = _style.strokeCap;
+        tbl["scaleStroke"] = _style.scaleStroke;
+        tbl["miterLimit"] = _style.miterLimit;
+        tbl["dashArray"] = _style.dashArray;
+        tbl["dashOffset"] = _style.dashOffset;
+        tbl["windingRule"] = _style.windingRule;
+
+        sol::stack::push(L, tbl);
+        
         return 1;
     }
 };
