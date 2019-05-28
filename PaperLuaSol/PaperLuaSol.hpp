@@ -412,7 +412,91 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
                                      "ratio",
                                      &RadialGradient::ratio);
 
-    //@TODO: Add Style binding
+    // void setStrokeJoin(StrokeJoin _join);
+    // void setStrokeCap(StrokeCap _cap);
+    // void setMiterLimit(Float _limit);
+    // void setStrokeWidth(Float _width);
+    // void setStroke(const stick::String & _svgName);
+    // void setStroke(const Paint & _paint);
+    // void setDashArray(const DashArray & _arr);
+    // void setDashOffset(Float _f);
+    // void setScaleStroke(bool _b);
+    // void setFill(const stick::String & _svgName);
+    // void setFill(const Paint & _paint);
+    // void setWindingRule(WindingRule _rule);
+
+    // StrokeJoin strokeJoin() const;
+    // StrokeCap strokeCap() const;
+    // Float miterLimit() const;
+    // Float strokeWidth() const;
+    // const DashArray & dashArray() const;
+    // Float dashOffset() const;
+    // WindingRule windingRule() const;
+    // bool scaleStroke() const;
+    // Paint fill() const;
+    // Paint stroke() const;
+    // const StyleData & data() const;
+
+    // StylePtr clone(Item * _item = nullptr) const;
+
+    tbl.new_usertype<Style>("Style",
+                            "new",
+                            sol::no_constructor,
+                            "setStrokeJoin",
+                            &Style::setStrokeJoin,
+                            "setStrokeCap",
+                            &Style::setStrokeCap,
+                            "setMiterLimit",
+                            &Style::setMiterLimit,
+                            "setStrokeWidth",
+                            &Style::setStrokeWidth,
+                            "setStroke",
+                            sol::overload(void (Style::*)(const String &) & &Style::setStroke,
+                                          void (Style::*)(const Paint &) & Style::setStroke),
+                            "setDashArray",
+                            "setDashArray",
+                            [](Style * _self, sol::table _tbl) {
+                                Size s = _tbl.size();
+                                stick::DynamicArray<Float> dashes(s);
+                                for (Size i = 1; i <= _tbl.size(); ++i)
+                                {
+                                    dashes[i - 1] = _tbl[i];
+                                }
+                                _self->setDashArray(dashes);
+                            },
+                            "setDashOffset",
+                            &Style::setDashOffset,
+                            "setScaleStroke",
+                            &Style::setScaleStroke,
+                            "setFill",
+                            sol::overload(void (Style::*)(const String &) & &Style::setFill,
+                                          void (Style::*)(const Paint &) & Style::setFill),
+                            "setWindingRule",
+                            &Style::setWindingRule,
+                            "strokeJoin",
+                            &Style::strokeJoin,
+                            "strokeCap",
+                            &Style::strokeCap,
+                            "miterLimit",
+                            &Style::miterLimit,
+                            "strokeWidth",
+                            &Style::strokeWidth,
+                            "dashArray",
+                            &Style::dashArray,
+                            "dashOffset",
+                            &Style::dashOffset,
+                            "windingRule",
+                            &Style::windingRule,
+                            "scaleStroke",
+                            &Style::scaleStroke,
+                            "fill",
+                            &Style::fill,
+                            "stroke",
+                            &Style::stroke);
+
+    //@TODO: Bind StyleData or make a table converter for easily setting a style from a table
+
+
     // tbl.new_usertype<ResolvedStyle>("ResolvedStyle",
     //                                 "new",
     //                                 sol::no_constructor,
@@ -647,8 +731,10 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
         &Item::isTransformed,
         "canAddChild",
         &Item::canAddChild,
-        "resolvedStyle",
-        &Item::resolvedStyle);
+        "style",
+        &Item::style,
+        "stylePtr",
+        &Item::stylePtr);
 
     tbl.new_usertype<Group>("Group",
                             sol::base_classes,
@@ -994,29 +1080,29 @@ struct pusher<paper::svg::SVGImportResult>
     }
 };
 
-template <>
-struct pusher<paper::ResolvedStyle>
-{
-    static int push(lua_State * L, const paper::ResolvedStyle & _style)
-    {
-        sol::table tbl(L, sol::new_table(0, 10));
+// template <>
+// struct pusher<paper::StyleData>
+// {
+//     static int push(lua_State * L, const paper::StyleData & _style)
+//     {
+//         sol::table tbl(L, sol::new_table(0, 10));
 
-        tbl["fill"] = _style.fill;
-        tbl["stroke"] = _style.stroke;
-        tbl["strokeWidth"] = _style.strokeWidth;
-        tbl["strokeJoin"] = _style.strokeJoin;
-        tbl["strokeCap"] = _style.strokeCap;
-        tbl["scaleStroke"] = _style.scaleStroke;
-        tbl["miterLimit"] = _style.miterLimit;
-        tbl["dashArray"] = _style.dashArray;
-        tbl["dashOffset"] = _style.dashOffset;
-        tbl["windingRule"] = _style.windingRule;
+//         tbl["fill"] = _style.fill;
+//         tbl["stroke"] = _style.stroke;
+//         tbl["strokeWidth"] = _style.strokeWidth;
+//         tbl["strokeJoin"] = _style.strokeJoin;
+//         tbl["strokeCap"] = _style.strokeCap;
+//         tbl["scaleStroke"] = _style.scaleStroke;
+//         tbl["miterLimit"] = _style.miterLimit;
+//         tbl["dashArray"] = _style.dashArray;
+//         tbl["dashOffset"] = _style.dashOffset;
+//         tbl["windingRule"] = _style.windingRule;
 
-        sol::stack::push(L, tbl);
-        
-        return 1;
-    }
-};
+//         sol::stack::push(L, tbl);
+
+//         return 1;
+//     }
+// };
 
 } // namespace stack
 
