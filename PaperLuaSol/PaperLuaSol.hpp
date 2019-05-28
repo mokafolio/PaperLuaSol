@@ -1080,51 +1080,6 @@ struct pusher<paper::svg::SVGImportResult>
     }
 };
 
-<<<<<<< HEAD
-// template <>
-// struct pusher<paper::StyleData>
-// {
-//     static int push(lua_State * L, const paper::StyleData & _style)
-//     {
-//         sol::table tbl(L, sol::new_table(0, 10));
-
-//         tbl["fill"] = _style.fill;
-//         tbl["stroke"] = _style.stroke;
-//         tbl["strokeWidth"] = _style.strokeWidth;
-//         tbl["strokeJoin"] = _style.strokeJoin;
-//         tbl["strokeCap"] = _style.strokeCap;
-//         tbl["scaleStroke"] = _style.scaleStroke;
-//         tbl["miterLimit"] = _style.miterLimit;
-//         tbl["dashArray"] = _style.dashArray;
-//         tbl["dashOffset"] = _style.dashOffset;
-//         tbl["windingRule"] = _style.windingRule;
-=======
-template <>
-struct pusher<paper::ResolvedStyle>
-{
-    static int push(lua_State * L, const paper::ResolvedStyle & _style)
-    {
-        printf("PUSHING RESOLVED STYLE\n");
-        sol::table tbl(L, sol::new_table(0, 10));
-
-        tbl["fill"] = _style.fill;
-        tbl["stroke"] = _style.stroke;
-        tbl["strokeWidth"] = _style.strokeWidth;
-        tbl["strokeJoin"] = _style.strokeJoin;
-        tbl["strokeCap"] = _style.strokeCap;
-        tbl["scaleStroke"] = _style.scaleStroke;
-        tbl["miterLimit"] = _style.miterLimit;
-        tbl["dashArray"] = _style.dashArray;
-        tbl["dashOffset"] = _style.dashOffset;
-        tbl["windingRule"] = _style.windingRule;
->>>>>>> stash
-
-//         sol::stack::push(L, tbl);
-
-//         return 1;
-//     }
-// };
-
 } // namespace stack
 
 template <bool Const, class CT, class TO>
