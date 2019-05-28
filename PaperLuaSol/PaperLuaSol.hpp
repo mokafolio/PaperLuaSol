@@ -451,9 +451,8 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
                             "setStrokeWidth",
                             &Style::setStrokeWidth,
                             "setStroke",
-                            sol::overload(void (Style::*)(const String &) & &Style::setStroke,
-                                          void (Style::*)(const Paint &) & Style::setStroke),
-                            "setDashArray",
+                            sol::overload((void (Style::*)(const String &)) & Style::setStroke,
+                                          (void (Style::*)(const Paint &)) & Style::setStroke),
                             "setDashArray",
                             [](Style * _self, sol::table _tbl) {
                                 Size s = _tbl.size();
@@ -469,8 +468,8 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
                             "setScaleStroke",
                             &Style::setScaleStroke,
                             "setFill",
-                            sol::overload(void (Style::*)(const String &) & &Style::setFill,
-                                          void (Style::*)(const Paint &) & Style::setFill),
+                            sol::overload((void (Style::*)(const String &)) & Style::setFill,
+                                          (void (Style::*)(const Paint &)) & Style::setFill),
                             "setWindingRule",
                             &Style::setWindingRule,
                             "strokeJoin",
@@ -495,7 +494,6 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
                             &Style::stroke);
 
     //@TODO: Bind StyleData or make a table converter for easily setting a style from a table
-
 
     // tbl.new_usertype<ResolvedStyle>("ResolvedStyle",
     //                                 "new",
