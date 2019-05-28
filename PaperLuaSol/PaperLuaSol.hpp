@@ -648,7 +648,10 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
         "canAddChild",
         &Item::canAddChild,
         "resolvedStyle",
-        &Item::resolvedStyle);
+        [](Item * _self)
+        {
+            return _self->resolvedStyle(); 
+        });
 
     tbl.new_usertype<Group>("Group",
                             sol::base_classes,
@@ -999,6 +1002,7 @@ struct pusher<paper::ResolvedStyle>
 {
     static int push(lua_State * L, const paper::ResolvedStyle & _style)
     {
+        printf("PUSHING RESOLVED STYLE\n");
         sol::table tbl(L, sol::new_table(0, 10));
 
         tbl["fill"] = _style.fill;
