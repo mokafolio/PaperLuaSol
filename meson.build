@@ -5,7 +5,7 @@ add_project_arguments('-Wno-missing-braces', language: 'cpp')
 
 incDirs = include_directories('.')
 
-if meson.is_subproject() == false
+if meson.is_subproject() == false or get_option('forceInstallHeaders')
     install_headers('PaperLuaSol/PaperLuaSol.hpp', subdir: 'PaperLuaSol')
 endif
 
