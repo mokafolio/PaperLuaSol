@@ -177,6 +177,7 @@ sol::object dynamicPropertyIndex(T * _self, sol::stack_object _key, sol::this_st
 
 } // namespace detail
 
+#ifdef PAPERLUASOL_IMPLEMENTATION
 STICK_API void registerPaper(sol::state_view _lua, const stick::String & _namespace)
 {
     registerPaper(_lua, stickLuaSol::ensureNamespaceTable(_lua, _lua.globals(), _namespace));
@@ -1005,6 +1006,7 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
             return std::move(sp);
         }));
 }
+#endif // PAPERLUASOL_IMPLEMENTATION
 
 } // namespace paperLuaSol
 
