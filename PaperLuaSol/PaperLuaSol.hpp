@@ -183,22 +183,37 @@ STICK_API void registerPaper(sol::state_view _lua, const stick::String & _namesp
     registerPaper(_lua, stickLuaSol::ensureNamespaceTable(_lua, _lua.globals(), _namespace));
 }
 
+template <bool B, class T>
+struct CurveSetterAdder
+{
+    static void add(sol::table _tbl, const char * _name)
+    {
+        _tbl[_name]["setPositionOne"] = &T::setPositionOne;
+        _tbl[_name]["setHandleOne"] = &T::setHandleOne;
+        _tbl[_name]["setPositionTwo"] = &T::setPositionTwo;
+        _tbl[_name]["setHandleTwo"] = &T::setHandleTwo;
+    }
+};
+
 template <class T>
+struct CurveSetterAdder<true, T>
+{
+    static void add(sol::table _tbl, const char * _name)
+    {
+    }
+};
+
+template <class T, bool bConst>
 inline void registerCurveType(sol::table _tbl, const char * _name)
 {
+    using namespace paper;
+    using namespace stick;
+
     _tbl.new_usertype<T>(_name,
                          "new",
                          sol::no_constructor,
                          "path",
                          &T::path,
-                         "setPositionOne",
-                         &T::setPositionOne,
-                         "setHandleOne",
-                         &T::setHandleOne,
-                         "setPositionTwo",
-                         &T::setPositionTwo,
-                         "setHandleTwo",
-                         &T::setHandleTwo,
                          "positionOne",
                          &T::positionOne,
                          "positionTwo",
@@ -234,7 +249,7 @@ inline void registerCurveType(sol::table _tbl, const char * _name)
                          "parameterAtOffset",
                          &T::parameterAtOffset,
                          "closestParameter",
-                         (Float(T::*)(const Vec2f &) const) & T::closestParameter,
+                         sol::resolve<Float(const Vec2f &) const>(&T::closestParameter),
                          "lengthBetween",
                          &T::lengthBetween,
                          "pathOffset",
@@ -259,16 +274,26 @@ inline void registerCurveType(sol::table _tbl, const char * _name)
                          &T::length,
                          "area",
                          &T::area,
-                         "divideAt",
-                         &T::divideAt,
-                         "divideAtParameter",
-                         &T::divideAtParameter,
+                         // "divideAt",
+                         // &T::divideAt,
+                         // "divideAtParameter",
+                         // &T::divideAtParameter,
                          "bounds",
-                         (const Rect & (T::*)() const) & T::bounds,
+                         sol::resolve<const Rect &() const>(&T::bounds),
                          "boundsWithPadding",
-                         (Rect(T::*)(Float) const) & T::bounds,
+                         sol::resolve<Rect(Float) const>(&T::bounds),
                          "index",
                          &T::index);
+
+    CurveSetterAdder<bConst, T>::add(_tbl, _name);
+
+    // if (!_bConst)
+    // {
+    //     _tbl[_name].set_function("setPositionOne", &T::setPositionOne);
+    //     _tbl[_name].set_function("setHandleOne", &T::setHandleOne);
+    //     _tbl[_name].set_function("setPositionTwo", &T::setPositionTwo);
+    //     _tbl[_name].set_function("setHandleTwo", &T::setHandleTwo);
+    // }
 }
 
 STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
@@ -379,8 +404,8 @@ STICK_API void registerPaper(sol::state_view _lua, sol::table _tbl)
                                     "curve",
                                     &CurveLocation::curve);
 
-    registerCurveType<Curve>(tbl, "Curve");
-    registerCurveType<ConstCurve>(tbl, "ConstCurve");
+    registerCurveType<Curve, false>(tbl, "Curve");
+    registerCurveType<ConstCurve, true>(tbl, "ConstCurve");
 
     // tbl.new_usertype<Curve>("Curve",
     // "new",
